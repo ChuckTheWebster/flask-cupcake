@@ -7,7 +7,7 @@ db = SQLAlchemy()
 DEFAULT_IMAGE = "https://tinyurl.com/demo-cupcake"
 
 class Cupcake(db.Model):
-    """"""
+    """Cupcake model"""
 
     __tablename__ = "cupcakes"
 
@@ -17,6 +17,15 @@ class Cupcake(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     image = db.Column(db.Text, nullable=False, default=DEFAULT_IMAGE)
 
+    def serialize(self):
+        """Serialize to dictionary"""
+        return {
+            "id": self.id,
+            "flavor": self.flavor,
+            "size": self.size,
+            "rating": self.rating,
+            "image": self.image,
+        }
 
 def connect_db(app):
     """Connect this database to provided Flask app.
