@@ -2,7 +2,7 @@
 
 # from flask_debugtoolbar import DebugToolbarExtension
 from flask import Flask, jsonify, request
-from models import db, connect_db, Cupcake
+from models import db, connect_db, Cupcake, DEFAULT_IMAGE
 
 app = Flask(__name__)
 
@@ -64,7 +64,7 @@ def create_cupcake():
 def update_cupcake(cupcake_id):
     """Updates an existing cupcake"""
 
-    cupcake = Cupcake.query.get(cupcake_id)
+    cupcake = Cupcake.query.get_or_404(cupcake_id)
 
     try:
         cupcake.flavor = request.json["flavor"]
@@ -82,7 +82,7 @@ def update_cupcake(cupcake_id):
         cupcake.rating = cupcake.rating
 
     try:
-        cupcake.image = request.json["image"] or None
+        cupcake.image = request.json["image"] or DEFAULT_IMAGE
     except:
         cupcake.image = cupcake.image
 
@@ -93,4 +93,12 @@ def update_cupcake(cupcake_id):
 
     return (jsonify(cupcake=serialized))
 
+@app.delete("/api/cupcakes/<int:cupcake_id>")
+def delete_cupcake(cupcake_id):
 
+    cupcake = Cupcake.query.get_or_404(cupcake_id)
+
+    db.session.delete(cupcake)
+    db.session.commit()
+
+    return jsonify(deleted=cupcake_id)
