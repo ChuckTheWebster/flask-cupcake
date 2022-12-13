@@ -1,7 +1,7 @@
 """Flask app for Cupcakes"""
 
 # from flask_debugtoolbar import DebugToolbarExtension
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from models import db, connect_db, Cupcake, DEFAULT_IMAGE
 
 app = Flask(__name__)
@@ -20,6 +20,11 @@ connect_db(app)
 # app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 # toolbar = DebugToolbarExtension(app)
+
+@app.get("/")
+def home_page():
+    """Renders home page"""
+    return render_template('home.html')
 
 @app.get("/api/cupcakes")
 def get_all_cupcakes():
@@ -62,24 +67,15 @@ def create_cupcake():
 
 @app.patch("/api/cupcakes/<int:cupcake_id>")
 def update_cupcake(cupcake_id):
-    """Updates an existing cupcake"""
+    """Updates an existing cupcake
+    returns JSON: {cupcake: [{id, flavor, rating, size, image}]}
+    """
 
     cupcake = Cupcake.query.get_or_404(cupcake_id)
 
-    try:
-        cupcake.flavor = request.json["flavor"]
-    except:
-        cupcake.flavor = cupcake.flavor
-
-    try:
-        cupcake.size = request.json["size"]
-    except:
-        cupcake.size = cupcake.size
-
-    try:
-        cupcake.rating = request.json["rating"]
-    except:
-        cupcake.rating = cupcake.rating
+    cupcake.flavor = request.json.get("flavor", cupcake.flavor)
+    cupcake.size = request.json.get("size", cupcake.size)
+    cupcake.rating = request.json.get("rating", cupcake.rating)
 
     try:
         cupcake.image = request.json["image"] or DEFAULT_IMAGE
@@ -95,6 +91,9 @@ def update_cupcake(cupcake_id):
 
 @app.delete("/api/cupcakes/<int:cupcake_id>")
 def delete_cupcake(cupcake_id):
+    """Removes cupcake from db and returns deleted message
+    returns JSON {deleted: cupcake_id}
+    """
 
     cupcake = Cupcake.query.get_or_404(cupcake_id)
 
